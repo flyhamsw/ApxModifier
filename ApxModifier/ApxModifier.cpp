@@ -312,6 +312,7 @@ void ApxModifier::writeNewFile(char* txt_filename)
 	}
 	else
 	{
+		//Get the name of .txt file from full directory (filename)
 		filename = txt_filename;
 
 		int dotIdx;

@@ -71,7 +71,8 @@ class Row
 public:
 	RowGPGGA* rowGPGGA;
 	RowPASHR* rowPASHR;
-	Row(RowGPGGA*, RowPASHR*);
+	RowGPHDT* rowGPHDT;
+	Row(RowGPGGA*, RowPASHR*, RowGPHDT*);
 };
 
 //Interpolated Data

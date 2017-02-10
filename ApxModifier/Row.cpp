@@ -48,10 +48,11 @@ RowPTNL::RowPTNL(char* txt_type, char* txt_time, char* txt_field4, char* txt_fie
 	field8 = txt_field8;
 }
 
-Row::Row(RowGPGGA* matchedRowGPGGA, RowPASHR* matchedRowPASHR)
+Row::Row(RowGPGGA* matchedRowGPGGA, RowPASHR* matchedRowPASHR, RowGPHDT* matchedRowGPHDT)
 {
 	rowGPGGA = matchedRowGPGGA;
 	rowPASHR = matchedRowPASHR;
+	rowGPHDT = matchedRowGPHDT;
 }
 
 RowInterpolated::RowInterpolated(double intpl_X, double intpl_Y, double intpl_Z, double intpl_heading, double intpl_roll, double intpl_pitch)

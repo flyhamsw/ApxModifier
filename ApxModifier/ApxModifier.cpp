@@ -158,19 +158,22 @@ void ApxModifier::loadData()
 
 void ApxModifier::matchData()
 {
-	//Find GPS data and INS data with same time, and conjugate the GPS-INS data
+	//Find GPS data and INS data with same time
 	cout << "Matching Data...";
 
 	while (!(qGPGGA.empty()) && !(qPASHR.empty()))
 	{
 		double time_GPGGA;
 		double time_PASHR;
+		double time_GPHDT;
 
 		RowGPGGA* currRowGPGGA = qGPGGA.front();
 		RowPASHR* currRowPASHR = qPASHR.front();
+		RowGPHDT* currRowGPHDT = qGPHDT.front();
 
 		time_GPGGA = atof(currRowGPGGA->time);
 		time_PASHR = atof(currRowPASHR->time);
+		//time_GPHDT = atof(currRowGPHDT->time);
 
 		//Pop queue with lower time value
 		if (time_GPGGA < time_PASHR)
@@ -184,10 +187,23 @@ void ApxModifier::matchData()
 		//If time data of each queue are same, store them, and pop both queues
 		else if (time_GPGGA == time_PASHR)
 		{
-			Row* matchedRow = new Row(currRowGPGGA, currRowPASHR);
-			qResult.push(matchedRow);
-			qGPGGA.pop();
-			qPASHR.pop();
+			if (time_GPGGA < time_GPHDT)
+			{
+				qGPGGA.pop();
+				qPASHR.pop();
+			}
+			else if (time_GPGGA > time_GPHDT)
+			{
+				qGPHDT.pop();
+			}
+			else if (time_GPGGA == time_GPHDT)
+			{
+				Row* matchedRow = new Row(currRowGPGGA, currRowPASHR, currRowGPHDT);
+				qResult.push(matchedRow);
+				qGPGGA.pop();
+				qPASHR.pop();
+				qGPHDT.pop();
+			}			
 		}
 	}
 

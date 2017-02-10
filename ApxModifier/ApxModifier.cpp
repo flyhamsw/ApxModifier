@@ -151,6 +151,7 @@ void ApxModifier::loadData()
 
 		cout << "# of GPGGA(Location): " << qGPGGA.size() << endl
 			<< "# of PASHR(Attitude): " << qPASHR.size() << endl
+			<< "# of GPHDT(GPS Heading)): " << qGPHDT.size() << endl
 			<< "# of PTNL(Event Time): " << qPTNL.size() << endl << endl;
 	}
 
@@ -325,10 +326,27 @@ void ApxModifier::interpolateData()
 				double afterX = atof(rowAfter->rowGPGGA->lng);
 				double afterY = atof(rowAfter->rowGPGGA->lat);
 
+				double beforeX_min = fmod(beforeX, 100);
+				double beforeY_min = fmod(beforeY, 100);
+				double afterX_min = fmod(afterX, 100);
+				double afterY_min = fmod(afterY, 100);
+
+				double beforeX_deg = (beforeX - beforeX_min) / 100;
+				double beforeY_deg = (beforeY - beforeY_min) / 100;
+				double afterX_deg = (afterX - afterX_min) / 100;
+				double afterY_deg = (afterY - afterY_min) / 100;
+
+				beforeX = (beforeX_deg + beforeX_min / 60)*pi / 180;
+				beforeY = (beforeY_deg + beforeY_min / 60)*pi / 180;
+				afterX = (afterX_deg + afterX_min / 60)*pi / 180;
+				afterY = (afterY_deg + afterY_min / 60)*pi / 180;
+
 				convertWGS84_to_TM(&beforeX, &beforeY);
 				convertWGS84_to_TM(&afterX, &afterY);
 
 				weightedHeading = atan2((afterY - beforeY), (afterX - beforeX));
+				weightedRoll = 0;
+				weightedPitch = 0;
 			}
 			else
 			{

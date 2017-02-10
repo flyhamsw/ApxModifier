@@ -109,20 +109,6 @@ void ApxModifier::loadData()
 
 					qPASHR.push(row);
 				}
-				else if (strcmp(lineHeader, "$GPHDT") == 0)
-				{
-					char* heading = new char[20];
-					char* headingTrue = new char[20];
-					char* checksum = new char[20];
-
-					line_stream.getline(heading, 20, ',');
-					line_stream.getline(headingTrue, 20, ',');
-					line_stream.getline(checksum, 20, ',');
-
-					RowGPHDT* row = new RowGPHDT(heading, headingTrue, checksum);
-
-					qGPHDT.push(row);
-				}
 				else if (strcmp(lineHeader, "$PTNL") == 0)
 				{
 					char* type = new char[20];
@@ -151,7 +137,6 @@ void ApxModifier::loadData()
 
 		cout << "# of GPGGA(Location): " << qGPGGA.size() << endl
 			<< "# of PASHR(Attitude): " << qPASHR.size() << endl
-			<< "# of GPHDT(GPS Heading)): " << qGPHDT.size() << endl
 			<< "# of PTNL(Event Time): " << qPTNL.size() << endl << endl;
 	}
 

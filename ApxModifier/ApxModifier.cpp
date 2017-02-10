@@ -306,9 +306,26 @@ void ApxModifier::interpolateData()
 		double weightedLat = (atof(rowBefore->rowGPGGA->lat)*weightA + atof(rowAfter->rowGPGGA->lat)*weightB) / (weightA + weightB);
 		double weightedLng = (atof(rowBefore->rowGPGGA->lng)*weightA + atof(rowAfter->rowGPGGA->lng)*weightB) / (weightA + weightB);
 		double weightedHeightWGS84 = (atof(rowBefore->rowGPGGA->heightWGS84)*weightA + atof(rowAfter->rowGPGGA->heightWGS84)*weightB) / (weightA + weightB);
-		double weightedHeading = (atof(rowBefore->rowPASHR->heading)*weightA + atof(rowAfter->rowPASHR->heading)*weightB) / (weightA + weightB);
-		double weightedRoll = (atof(rowBefore->rowPASHR->roll)*weightA + atof(rowAfter->rowPASHR->roll)*weightB) / (weightA + weightB);
-		double weightedPitch = (atof(rowBefore->rowPASHR->pitch)*weightA + atof(rowAfter->rowPASHR->pitch)*weightB) / (weightA + weightB);
+
+		//Select Attitude data by priority: 1-INS, 2-GPS Heading, 3-Arctangent
+		if (atof(rowBefore->rowPASHR->heading) == 0 || atof(rowAfter->rowPASHR->heading) == 0)
+		{
+			if (atof(rowBefore->rowGPHDT->heading) == 0 || atof(rowAfter->rowGPHDT->heading) == 0)
+			{
+				//Priority #3: Arctangent
+			}
+			else
+			{
+				//Priority #2: GPS Heading
+			}
+		}
+		else
+		{
+			//Priority #1: INS
+			double weightedHeading = (atof(rowBefore->rowPASHR->heading)*weightA + atof(rowAfter->rowPASHR->heading)*weightB) / (weightA + weightB);
+			double weightedRoll = (atof(rowBefore->rowPASHR->roll)*weightA + atof(rowAfter->rowPASHR->roll)*weightB) / (weightA + weightB);
+			double weightedPitch = (atof(rowBefore->rowPASHR->pitch)*weightA + atof(rowAfter->rowPASHR->pitch)*weightB) / (weightA + weightB);
+		}		
 
 		//Split weighted values into Degree and Minute
 		double wLat_min = fmod(weightedLat, 100);

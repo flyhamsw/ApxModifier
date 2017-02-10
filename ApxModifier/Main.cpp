@@ -17,7 +17,7 @@ int main()
 	double pitch;
 
 	//기존 파일 로드
-	filename = "2017-01-18_175958_apx.txt";
+	filename = "D://APXTEST/Original/2017-01-26_132839_apx.txt";
 	ApxModifier* a = new ApxModifier(filename);
 
 	//이벤트 전, 후 데이터 검색 및 계산
@@ -32,8 +32,8 @@ int main()
 	//pitch = a->rowInterpolated->pitch;
 
 	//새 파일 생성
-	char newFilename[200] = "C://TEST/";
-	strcat_s(newFilename, filename);
+	char newFilename[200] = "D://APXTEST/2017-01-26_132839.txt";
+	//strcat_s(newFilename, filename);
 	a->writeNewFile(newFilename);
 
 	return 0;

@@ -285,7 +285,7 @@ void ApxModifier::interpolateData()
 
 		weightedLat = (atof(rowBefore->rowGPGGA->lat)*weightA + atof(rowAfter->rowGPGGA->lat)*weightB) / (weightA + weightB);
 		weightedLng = (atof(rowBefore->rowGPGGA->lng)*weightA + atof(rowAfter->rowGPGGA->lng)*weightB) / (weightA + weightB);
-		weightedHeightWGS84 = (atof(rowBefore->rowGPGGA->heightWGS84)*weightA + atof(rowAfter->rowGPGGA->heightWGS84)*weightB) / (weightA + weightB);
+		weightedHeightWGS84 = (atof(rowBefore->rowGPGGA->alt)*weightA + atof(rowAfter->rowGPGGA->alt)*weightB) / (weightA + weightB);
 		
 		//Select Attitude data by priority: 1-INS, 2-GPS Heading, 3-Arctangent
 		if (atof(rowBefore->rowPASHR->heading) == 0 || atof(rowAfter->rowPASHR->heading) == 0)

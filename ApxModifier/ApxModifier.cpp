@@ -166,11 +166,11 @@ void ApxModifier::matchData()
 	{
 		double time_GPGGA;
 		double time_PASHR;
-		double time_GPHDT;
+		//double time_GPHDT;
 
 		RowGPGGA* currRowGPGGA = qGPGGA.front();
 		RowPASHR* currRowPASHR = qPASHR.front();
-		RowGPHDT* currRowGPHDT = qGPHDT.front();
+		RowGPHDT* currRowGPHDT = NULL;
 
 		time_GPGGA = atof(currRowGPGGA->time);
 		time_PASHR = atof(currRowPASHR->time);
@@ -188,23 +188,10 @@ void ApxModifier::matchData()
 		//If time data of each queue are same, store them, and pop both queues
 		else if (time_GPGGA == time_PASHR)
 		{
-			if (time_GPGGA < time_GPHDT)
-			{
-				qGPGGA.pop();
-				qPASHR.pop();
-			}
-			else if (time_GPGGA > time_GPHDT)
-			{
-				qGPHDT.pop();
-			}
-			else if (time_GPGGA == time_GPHDT)
-			{
-				Row* matchedRow = new Row(currRowGPGGA, currRowPASHR, currRowGPHDT);
-				qResult.push(matchedRow);
-				qGPGGA.pop();
-				qPASHR.pop();
-				qGPHDT.pop();
-			}			
+			Row* matchedRow = new Row(currRowGPGGA, currRowPASHR, currRowGPHDT);
+			qResult.push(matchedRow);
+			qGPGGA.pop();
+			qPASHR.pop();
 		}
 	}
 
@@ -318,8 +305,6 @@ void ApxModifier::interpolateData()
 		//Select Attitude data by priority: 1-INS, 2-GPS Heading, 3-Arctangent
 		if (atof(rowBefore->rowPASHR->heading) == 0 || atof(rowAfter->rowPASHR->heading) == 0)
 		{
-			if (atof(rowBefore->rowGPHDT->heading) == 0 || atof(rowAfter->rowGPHDT->heading) == 0)
-			{
 				//Priority #3: Arctangent
 				double beforeX = atof(rowBefore->rowGPGGA->lng);
 				double beforeY = atof(rowBefore->rowGPGGA->lat);
@@ -347,14 +332,6 @@ void ApxModifier::interpolateData()
 				weightedHeading = atan2((afterY - beforeY), (afterX - beforeX));
 				weightedRoll = 0;
 				weightedPitch = 0;
-			}
-			else
-			{
-				//Priority #2: GPS Heading
-				weightedHeading = (atof(rowBefore->rowGPHDT->heading)*weightA + atof(rowAfter->rowGPHDT->heading)*weightB) / (weightA + weightB);
-				weightedRoll = 0;
-				weightedPitch = 0;
-			}
 		}
 		else
 		{

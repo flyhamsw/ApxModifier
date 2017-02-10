@@ -22,7 +22,8 @@ private:
 	ofstream fnew;
 
 	queue<RowGPGGA*> qGPGGA; //Location Queue
-	queue<RowPASHR*> qPASHR; //Attitude Queue
+	queue<RowPASHR*> qPASHR; //Attitude Queue (INS)
+	queue<RowGPHDT*> qGPHDT; //Attidude Queue (GPS)
 	queue<RowPTNL*> qPTNL;   //Event Queue
 	queue<Row*> qResult;     //Queue for matched result (by time)
 		

@@ -41,6 +41,16 @@ public:
 	RowPASHR(char*, char*, char*, char*, char*, char*, char*, char*, char*, char*, char*);
 };
 
+//GPS Heading Data
+class RowGPHDT
+{
+public:
+	char* heading;
+	char* headingTrue;
+	char* checksum;
+	RowGPHDT(char* txt_heading, char* txt_headingTrue, char* txt_checksum);
+};
+
 //Event Data
 class RowPTNL
 {

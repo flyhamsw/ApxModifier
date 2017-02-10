@@ -64,3 +64,9 @@ RowInterpolated::RowInterpolated(double intpl_X, double intpl_Y, double intpl_Z,
 	pitch = intpl_pitch;
 }
 
+RowGPHDT::RowGPHDT(char* txt_heading, char* txt_headingTrue, char* txt_checksum)
+{
+	heading = txt_heading;
+	headingTrue = txt_headingTrue;
+	checksum = txt_checksum;
+}

@@ -378,7 +378,7 @@ void ApxModifier::writeNewFile(char* txt_filename)
 		}
 
 		string jpgName = filename;
-		jpgName = jpgName.substr(slIdx + 1, dotIdx - slIdx - 1);
+		jpgName = jpgName.substr(slIdx - 1, dotIdx - slIdx - 1); //.t
 
 		fnew.open(filename);
 		fnew.precision(8);
@@ -389,7 +389,7 @@ void ApxModifier::writeNewFile(char* txt_filename)
 
 		if (fnew.is_open())
 		{
-			fnew << jpgName << ".jpg" << '\t' << rowInterpolated->X << '\t' << rowInterpolated->Y << '\t' << rowInterpolated->Z << '\t' << rowInterpolated->roll << '\t' << rowInterpolated->pitch << '\t' << rowInterpolated->heading;
+			fnew << jpgName << ".jpg" << '\t' << rowInterpolated->X << '\t' << rowInterpolated->Y << '\t' << rowInterpolated->Z << '\t' << rowInterpolated->roll*pi/180 << '\t' << rowInterpolated->pitch*pi / 180 << '\t' << rowInterpolated->heading*pi / 180;
 		}
 
 		fnew.close();

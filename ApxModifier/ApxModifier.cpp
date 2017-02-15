@@ -314,14 +314,14 @@ void ApxModifier::interpolateData()
 				convertWGS84_to_TM(&beforeX, &beforeY);
 				convertWGS84_to_TM(&afterX, &afterY);
 
-				weightedHeading = atan2((afterY - beforeY), (afterX - beforeX));
+				weightedHeading = atan2((afterY - beforeY), (afterX - beforeX))+ 225*pi/180;
 				weightedRoll = 0;
 				weightedPitch = 0;
 		}
 		else
 		{
 			//Priority #1: INS
-			weightedHeading = (atof(rowBefore->rowPASHR->heading)*weightA + atof(rowAfter->rowPASHR->heading)*weightB) / (weightA + weightB);
+			weightedHeading = (atof(rowBefore->rowPASHR->heading)*weightA + atof(rowAfter->rowPASHR->heading)*weightB) / (weightA + weightB)+90;
 			weightedRoll = (atof(rowBefore->rowPASHR->roll)*weightA + atof(rowAfter->rowPASHR->roll)*weightB) / (weightA + weightB);
 			weightedPitch = (atof(rowBefore->rowPASHR->pitch)*weightA + atof(rowAfter->rowPASHR->pitch)*weightB) / (weightA + weightB);
 		}		
@@ -378,7 +378,7 @@ void ApxModifier::writeNewFile(char* txt_filename)
 		}
 
 		string jpgName = filename;
-		jpgName = jpgName.substr(slIdx - 1, dotIdx - slIdx - 1); //.t
+		jpgName = jpgName.substr(slIdx + 1, dotIdx - slIdx - 1); //.t
 
 		fnew.open(filename);
 		fnew.precision(8);

@@ -17,7 +17,8 @@ int main()
 	double pitch;
 
 	//기존 파일 로드
-	filename = "D://APXTEST/Original/2017-01-26_132839_apx.txt";
+	//filename = "D://APXTEST/Original/2017-01-26_132835_apx.txt";
+	filename = "D://APXTEST/Original/2017-01-26_132835_apx_PASHR_Error.txt";
 	ApxModifier* a = new ApxModifier(filename);
 
 	//이벤트 전, 후 데이터 검색 및 계산
@@ -32,7 +33,7 @@ int main()
 	//pitch = a->rowInterpolated->pitch;
 
 	//새 파일 생성
-	char newFilename[200] = "D://APXTEST/2017-01-26_132839.txt";
+	char newFilename[200] = "D://APXTEST/2017-01-26_132835_apx_GPGGA_Error.txt.txt";
 	//strcat_s(newFilename, filename);
 	a->writeNewFile(newFilename);
 

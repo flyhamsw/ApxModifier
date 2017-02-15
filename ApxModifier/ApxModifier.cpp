@@ -265,31 +265,40 @@ void ApxModifier::interpolateData()
 				break;
 			}
 		}
+
 		cout << "OK" << endl;
-		cout << "The photo was taken between " << rowBefore->rowGPGGA->time << " and " << rowAfter->rowGPGGA->time << endl << endl;
-		cout << "Interpolation...";
 
-		diffA = abs(diffA);
-		diffB = abs(diffB);
-
-		//Interpolate by time difference
-		double weightA = 1 / diffA;
-		double weightB = 1 / diffB;
-
-		double weightedLat;
-		double weightedLng;
-		double weightedHeightWGS84;
-		double weightedHeading;
-		double weightedRoll;
-		double weightedPitch;
-
-		weightedLat = (atof(rowBefore->rowGPGGA->lat)*weightA + atof(rowAfter->rowGPGGA->lat)*weightB) / (weightA + weightB);
-		weightedLng = (atof(rowBefore->rowGPGGA->lng)*weightA + atof(rowAfter->rowGPGGA->lng)*weightB) / (weightA + weightB);
-		weightedHeightWGS84 = (atof(rowBefore->rowGPGGA->alt)*weightA + atof(rowAfter->rowGPGGA->alt)*weightB) / (weightA + weightB);
-		
-		//Select Attitude data by priority: 1-INS, 2-GPS Heading, 3-Arctangent
-		if (atof(rowBefore->rowPASHR->heading) == 0 || atof(rowAfter->rowPASHR->heading) == 0)
+		if (rowBefore == nullptr || rowAfter == nullptr)
 		{
+			cout << "Row before/after the event is NULL." << endl;
+			rowInterpolated = nullptr;
+		}
+		else
+		{
+			cout << "The photo was taken between " << rowBefore->rowGPGGA->time << " and " << rowAfter->rowGPGGA->time << endl << endl;
+			cout << "Interpolation...";
+
+			diffA = abs(diffA);
+			diffB = abs(diffB);
+
+			//Interpolate by time difference
+			double weightA = 1 / diffA;
+			double weightB = 1 / diffB;
+
+			double weightedLat;
+			double weightedLng;
+			double weightedHeightWGS84;
+			double weightedHeading;
+			double weightedRoll;
+			double weightedPitch;
+
+			weightedLat = (atof(rowBefore->rowGPGGA->lat)*weightA + atof(rowAfter->rowGPGGA->lat)*weightB) / (weightA + weightB);
+			weightedLng = (atof(rowBefore->rowGPGGA->lng)*weightA + atof(rowAfter->rowGPGGA->lng)*weightB) / (weightA + weightB);
+			weightedHeightWGS84 = (atof(rowBefore->rowGPGGA->alt)*weightA + atof(rowAfter->rowGPGGA->alt)*weightB) / (weightA + weightB);
+
+			//Select Attitude data by priority: 1-INS, 2-GPS Heading, 3-Arctangent
+			if (atof(rowBefore->rowPASHR->heading) == 0 || atof(rowAfter->rowPASHR->heading) == 0)
+			{
 				//Priority #3: Arctangent
 				double beforeX = atof(rowBefore->rowGPGGA->lng);
 				double beforeY = atof(rowBefore->rowGPGGA->lat);
@@ -314,37 +323,38 @@ void ApxModifier::interpolateData()
 				convertWGS84_to_TM(&beforeX, &beforeY);
 				convertWGS84_to_TM(&afterX, &afterY);
 
-				weightedHeading = atan2((afterY - beforeY), (afterX - beforeX))*180/pi + 225;
+				weightedHeading = atan2((afterY - beforeY), (afterX - beforeX)) * 180 / pi + 225;
 				weightedRoll = 0;
 				weightedPitch = 0;
+			}
+			else
+			{
+				//Priority #1: INS
+				weightedHeading = (atof(rowBefore->rowPASHR->heading)*weightA + atof(rowAfter->rowPASHR->heading)*weightB) / (weightA + weightB) + 90;
+				weightedRoll = (atof(rowBefore->rowPASHR->roll)*weightA + atof(rowAfter->rowPASHR->roll)*weightB) / (weightA + weightB);
+				weightedPitch = (atof(rowBefore->rowPASHR->pitch)*weightA + atof(rowAfter->rowPASHR->pitch)*weightB) / (weightA + weightB);
+			}
+
+			//Split weighted values into Degree and Minute
+			double wLat_min = fmod(weightedLat, 100);
+			double wLat_deg = ((weightedLat - wLat_min) / 100);
+
+			double wLng_min = fmod(weightedLng, 100);
+			double wLng_deg = ((weightedLng - wLng_min) / 100);
+
+			//Convert Deg, Min values to Radian
+			weightedLat = (wLat_deg + wLat_min / 60) * pi / 180;
+			weightedLng = (wLng_deg + wLng_min / 60) * pi / 180;
+
+			convertWGS84_to_TM(&weightedLng, &weightedLat);
+
+			//Store interpolated data
+			rowInterpolated = new RowInterpolated(weightedLng, weightedLat, weightedHeightWGS84, weightedHeading, weightedRoll, weightedPitch);
+
+			cout << "OK" << endl << endl;
+
+			f.close();
 		}
-		else
-		{
-			//Priority #1: INS
-			weightedHeading = (atof(rowBefore->rowPASHR->heading)*weightA + atof(rowAfter->rowPASHR->heading)*weightB) / (weightA + weightB) + 90;
-			weightedRoll = (atof(rowBefore->rowPASHR->roll)*weightA + atof(rowAfter->rowPASHR->roll)*weightB) / (weightA + weightB);
-			weightedPitch = (atof(rowBefore->rowPASHR->pitch)*weightA + atof(rowAfter->rowPASHR->pitch)*weightB) / (weightA + weightB);
-		}		
-
-		//Split weighted values into Degree and Minute
-		double wLat_min = fmod(weightedLat, 100);
-		double wLat_deg = ((weightedLat - wLat_min) / 100);
-
-		double wLng_min = fmod(weightedLng, 100);
-		double wLng_deg = ((weightedLng - wLng_min) / 100);
-
-		//Convert Deg, Min values to Radian
-		weightedLat = (wLat_deg + wLat_min / 60) * pi / 180;
-		weightedLng = (wLng_deg + wLng_min / 60) * pi / 180;
-
-		convertWGS84_to_TM(&weightedLng, &weightedLat);
-		
-		//Store interpolated data
-		rowInterpolated = new RowInterpolated(weightedLng, weightedLat, weightedHeightWGS84, weightedHeading, weightedRoll, weightedPitch);
-
-		cout << "OK" << endl << endl;
-
-		f.close();
 	}
 
 }

@@ -314,14 +314,14 @@ void ApxModifier::interpolateData()
 				convertWGS84_to_TM(&beforeX, &beforeY);
 				convertWGS84_to_TM(&afterX, &afterY);
 
-				weightedHeading = atan2((afterY - beforeY), (afterX - beforeX))+ 225*pi/180;
+				weightedHeading = atan2((afterY - beforeY), (afterX - beforeX))*180/pi + 225;
 				weightedRoll = 0;
 				weightedPitch = 0;
 		}
 		else
 		{
 			//Priority #1: INS
-			weightedHeading = (atof(rowBefore->rowPASHR->heading)*weightA + atof(rowAfter->rowPASHR->heading)*weightB) / (weightA + weightB)+90;
+			weightedHeading = (atof(rowBefore->rowPASHR->heading)*weightA + atof(rowAfter->rowPASHR->heading)*weightB) / (weightA + weightB) + 90;
 			weightedRoll = (atof(rowBefore->rowPASHR->roll)*weightA + atof(rowAfter->rowPASHR->roll)*weightB) / (weightA + weightB);
 			weightedPitch = (atof(rowBefore->rowPASHR->pitch)*weightA + atof(rowAfter->rowPASHR->pitch)*weightB) / (weightA + weightB);
 		}		

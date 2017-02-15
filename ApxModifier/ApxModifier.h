@@ -16,6 +16,7 @@ public:
 	ApxModifier(char*);
 	void interpolateData();
 	void writeNewFile(char*);
+	void printLocationData(char*);
 
 private:
 	ifstream f;

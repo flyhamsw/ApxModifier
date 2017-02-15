@@ -19,7 +19,7 @@ ApxModifier::ApxModifier(char* txt_filename)
 	filename = txt_filename;
 	f.open(filename);
 	loadData();
-	matchData();
+	//matchData();
 }
 
 void ApxModifier::loadData()
@@ -270,7 +270,7 @@ void ApxModifier::interpolateData()
 
 		if (rowBefore == nullptr || rowAfter == nullptr)
 		{
-			cout << "Row before/after the event is NULL." << endl;
+			cout << "Row before/after the event is NULL" << endl;
 			rowInterpolated = nullptr;
 		}
 		else
@@ -408,4 +408,43 @@ void ApxModifier::writeNewFile(char* txt_filename)
 
 	}
 
+}
+
+void ApxModifier::printLocationData(char* txt_filename)
+{
+	int i = 0;
+
+	filename = txt_filename;
+
+	fnew.open(filename);
+	fnew.precision(8);
+	fnew.setf(ios::fixed);
+	fnew.setf(ios::showpoint);
+
+	while (!qGPGGA.empty())
+	{
+		i++;
+
+		RowGPGGA* r = qGPGGA.front();
+
+		//Split values into Degree and Minute
+		double lat_min = fmod(atof(r->lat), 100);
+		double lat_deg = ((atof(r->lat) - lat_min) / 100);
+
+		double lng_min = fmod(atof(r->lng), 100);
+		double lng_deg = ((atof(r->lng) - lng_min) / 100);
+
+		double lat = lat_deg + lat_min / 60;
+		double lng = lng_deg + lng_min / 60;
+
+
+		if (fnew.is_open())
+		{
+			fnew << i << '\t' << lat << '\t' << lng << endl;
+		}
+
+		qGPGGA.pop();
+	}
+
+	fnew.close();
 }

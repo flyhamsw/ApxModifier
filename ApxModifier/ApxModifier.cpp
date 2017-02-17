@@ -14,6 +14,12 @@ using namespace std;
 //Constant value for pi
 const double pi = 3.141592653589793238463;
 
+//Constant value for determination of running
+const double DET_RUNNING = 0.5;
+
+//Constant value for determination of cornering
+const double DET_CORNERING = 0.2;
+
 ApxModifier::ApxModifier(char* txt_filename)
 {
 	filename = txt_filename;
@@ -194,11 +200,12 @@ void ApxModifier::loadData()
 
 bool ApxModifier::detData()
 {
-	queue<double*> qDistance;
-
+	queue<double> qDistance;
+	double averageDist = 0;
 	int x = size(qGPGGA_Det);
 
-	for (int i = 0; i < x - 2; i++)
+	//Average distance between the points
+	for (int i = 0; i < x - 1; i++)
 	{
 		RowGPGGA* rowA = qGPGGA_Det.front();
 		qGPGGA_Det.pop();
@@ -210,64 +217,105 @@ bool ApxModifier::detData()
 		double x_b = atof(rowB->lng);
 		double y_b = atof(rowB->lat);
 
+		//Split weighted values into Degree and Minute
+		double x_a_min = fmod(x_a, 100);
+		double x_a_deg = ((x_a - x_a_min) / 100);
+
+		double x_b_min = fmod(x_b, 100);
+		double x_b_deg = ((x_b - x_b_min) / 100);
+
+		double y_a_min = fmod(y_a, 100);
+		double y_a_deg = ((y_a - y_a_min) / 100);
+
+		double y_b_min = fmod(y_b, 100);
+		double y_b_deg = ((y_b - y_b_min) / 100);
+
+		//Convert Deg, Min values to Radian
+		x_a = (x_a_deg + x_a_min / 60) * pi / 180;
+		x_b = (x_b_deg + x_b_min / 60) * pi / 180;
+
+		y_a = (y_a_deg + y_a_min / 60) * pi / 180;
+		y_b = (y_b_deg + y_b_min / 60) * pi / 180;
+
 		convertWGS84_to_TM(&x_a, &y_a);
 		convertWGS84_to_TM(&x_b, &y_b);
 			
 		double distance = sqrt(pow((x_b - x_a), 2) + pow((y_b - y_a), 2));
 
-		qDistance.push(&distance);
+		qDistance.push(distance);
 	}
 
-	for (int i = 0; i < size(qDistance); i++)
+	x = size(qDistance);
+
+	for (int i = 0; i < x; i++)
 	{
-		cout << *(qDistance.front()) << endl;
+		averageDist += qDistance.front();
 		qDistance.pop();
 	}
 
-	return true;
+	averageDist = averageDist / x;
+	
+	//Determination whether to use data or not
+	if (averageDist > DET_RUNNING)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+	
 }
 
 void ApxModifier::matchData()
 {
-	detData();
-	//Find GPS data and INS data with same time
-	cout << "Matching Data...";
-
-	while (!(qGPGGA.empty()) && !(qPASHR.empty()))
+	bool det = detData();
+	if (det == true)
 	{
-		double time_GPGGA;
-		double time_PASHR;
-		//double time_GPHDT;
+		//Find GPS data and INS data with same time
+		cout << "Matching Data...";
 
-		RowGPGGA* currRowGPGGA = qGPGGA.front();
-		RowPASHR* currRowPASHR = qPASHR.front();
-		RowGPHDT* currRowGPHDT = NULL;
+		while (!(qGPGGA.empty()) && !(qPASHR.empty()))
+		{
+			double time_GPGGA;
+			double time_PASHR;
+			//double time_GPHDT;
 
-		time_GPGGA = atof(currRowGPGGA->time);
-		time_PASHR = atof(currRowPASHR->time);
-		//time_GPHDT = atof(currRowGPHDT->time);
+			RowGPGGA* currRowGPGGA = qGPGGA.front();
+			RowPASHR* currRowPASHR = qPASHR.front();
+			RowGPHDT* currRowGPHDT = NULL;
 
-		//Pop queue with lower time value
-		if (time_GPGGA < time_PASHR)
-		{
-			qGPGGA.pop();
+			time_GPGGA = atof(currRowGPGGA->time);
+			time_PASHR = atof(currRowPASHR->time);
+			//time_GPHDT = atof(currRowGPHDT->time);
+
+			//Pop queue with lower time value
+			if (time_GPGGA < time_PASHR)
+			{
+				qGPGGA.pop();
+			}
+			else if (time_GPGGA > time_PASHR)
+			{
+				qPASHR.pop();
+			}
+			//If time data of each queue are same, store them, and pop both queues
+			else if (time_GPGGA == time_PASHR)
+			{
+				Row* matchedRow = new Row(currRowGPGGA, currRowPASHR, currRowGPHDT);
+				qResult.push(matchedRow);
+				qGPGGA.pop();
+				qPASHR.pop();
+			}
 		}
-		else if (time_GPGGA > time_PASHR)
-		{
-			qPASHR.pop();
-		}
-		//If time data of each queue are same, store them, and pop both queues
-		else if (time_GPGGA == time_PASHR)
-		{
-			Row* matchedRow = new Row(currRowGPGGA, currRowPASHR, currRowGPHDT);
-			qResult.push(matchedRow);
-			qGPGGA.pop();
-			qPASHR.pop();
-		}
+
+		cout << "OK" << endl;
+		cout << "# of Result Queue: " << qResult.size() << endl << endl;
+	}
+	else
+	{
+		cout << "UAV was hovering or cornering" << endl;
 	}
 
-	cout << "OK" << endl;
-	cout << "# of Result Queue: " << qResult.size() << endl << endl;
 }
 
 void ApxModifier::interpolateData()

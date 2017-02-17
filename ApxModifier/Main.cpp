@@ -9,7 +9,7 @@ int main()
 	char* filename; //기존 파일명
 
 	//기존 파일 로드
-	filename = "D://APXTEST/Original/2017-02-07_144821_apx.txt";
+	filename = "D://APXTEST/Original/2017-02-13_151325_apx.txt";
 	ApxModifier* a = new ApxModifier(filename);
 
 	//이벤트 전, 후 데이터 검색 및 계산

@@ -201,11 +201,22 @@ void ApxModifier::loadData()
 bool ApxModifier::detData()
 {
 	queue<double> qDistance;
+	
+	queue<double> qxTM;
+	queue<double> qyTM;
+
 	double averageDist = 0;
-	int x = size(qGPGGA_Det);
+	double averageFLDist = 0;
+
+	int n = size(qGPGGA_Det);
+
+	double x_first;
+	double y_first;
+	double x_last;
+	double y_last;
 
 	//Average distance between the points
-	for (int i = 0; i < x - 1; i++)
+	for (int i = 0; i < n - 1; i++)
 	{
 		RowGPGGA* rowA = qGPGGA_Det.front();
 		qGPGGA_Det.pop();
@@ -243,22 +254,70 @@ bool ApxModifier::detData()
 		double distance = sqrt(pow((x_b - x_a), 2) + pow((y_b - y_a), 2));
 
 		qDistance.push(distance);
+
+		if (i != 0)
+		{
+			qxTM.push(x_a);
+			qyTM.push(y_a);
+		}
+
+		if (i == 0)
+		{
+			cout << i << "first";
+			x_first = x_a;
+			y_first = y_a;
+		}
+		else if (i == n - 2)
+		{
+			cout << i << "last";
+			x_last = x_b;
+			y_last = y_b;
+		}
 	}
 
-	x = size(qDistance);
+	int n1 = size(qDistance);
 
-	for (int i = 0; i < x; i++)
+	for (int i = 0; i < n1; i++)
 	{
 		averageDist += qDistance.front();
 		qDistance.pop();
 	}
 
-	averageDist = averageDist / x;
+	int n2 = size(qxTM);
+
+	for (int i = 0; i < n2; i++)
+	{
+		double x = qxTM.front();
+		double y = qyTM.front();
+
+		qxTM.pop();
+		qyTM.pop();
+
+		double a = (y_last - y_first) / (x_last - x_first);
+		double b = -1;
+		double c = y_first - a*x_first;
+
+		double d = abs(a*x + b*y + c) / sqrt(pow(a, 2) + pow(b, 2));
+
+		averageFLDist += d;
+	}
+
+	averageDist = averageDist / n1;
+	averageFLDist = averageFLDist / n2;
+
+	printf("%f", averageFLDist);
 	
 	//Determination whether to use data or not
 	if (averageDist > DET_RUNNING)
 	{
-		return true;
+		if (averageFLDist < DET_CORNERING)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 	else
 	{

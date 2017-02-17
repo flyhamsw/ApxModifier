@@ -263,13 +263,11 @@ bool ApxModifier::detData()
 
 		if (i == 0)
 		{
-			cout << i << "first";
 			x_first = x_a;
 			y_first = y_a;
 		}
 		else if (i == n - 2)
 		{
-			cout << i << "last";
 			x_last = x_b;
 			y_last = y_b;
 		}
@@ -305,8 +303,6 @@ bool ApxModifier::detData()
 	averageDist = averageDist / n1;
 	averageFLDist = averageFLDist / n2;
 
-	printf("%f", averageFLDist);
-	
 	//Determination whether to use data or not
 	if (averageDist > DET_RUNNING)
 	{
@@ -316,11 +312,13 @@ bool ApxModifier::detData()
 		}
 		else
 		{
+			cout << "UAV was cornering" << endl;
 			return false;
 		}
 	}
 	else
 	{
+		cout << "UAV was too slow" << endl;
 		return false;
 	}
 	
@@ -372,7 +370,7 @@ void ApxModifier::matchData()
 	}
 	else
 	{
-		cout << "UAV was hovering or cornering" << endl;
+		cout << "Determined not to use this data" << endl;
 	}
 
 }

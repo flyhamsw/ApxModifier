@@ -12,8 +12,8 @@ public:
 	Row* rowBefore; //GPS-INS Data before the event
 	Row* rowAfter; //GPS-INS Data after the event
 	RowInterpolated* rowInterpolated; //Interpolated data
-	
-	ApxModifier(char*);
+
+	ApxModifier(char*, bool); //Target filename(char*) and determination option(true/false)
 	void interpolateData();
 	void writeNewFile(char*);
 	void printLocationData(char*);
@@ -34,6 +34,6 @@ private:
 	char* newFilename; //Releative directory of modified filename
 
 	void loadData();
-	void matchData();
+	void matchData(bool);
 	bool detData();
 };

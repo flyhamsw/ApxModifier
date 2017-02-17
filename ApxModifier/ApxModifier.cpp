@@ -15,17 +15,19 @@ using namespace std;
 const double pi = 3.141592653589793238463;
 
 //Constant value for determination of running
+//In detData method, it will be determined to use the data if the average distance between each point are bigger than DET_RUNNING
 const double DET_RUNNING = 0.5;
 
 //Constant value for determination of cornering
+//In detData method, it will be determined to use the data if the average distance between each point and line connecting the first/last point are bigger than DET_CORNERING
 const double DET_CORNERING = 0.2;
 
-ApxModifier::ApxModifier(char* txt_filename)
+ApxModifier::ApxModifier(char* txt_filename, bool det_option)
 {
 	filename = txt_filename;
 	f.open(filename);
 	loadData();
-	matchData();
+	matchData(det_option);
 }
 
 //Copyright: http://m.blog.naver.com/tacma/20108668315
@@ -283,6 +285,7 @@ bool ApxModifier::detData()
 
 	int n2 = size(qxTM);
 
+	//Average distance between points and FL line (FL line: First-Last Line; a line connecting the first point and the last point)
 	for (int i = 0; i < n2; i++)
 	{
 		double x = qxTM.front();
@@ -320,13 +323,17 @@ bool ApxModifier::detData()
 	{
 		cout << "UAV was too slow" << endl;
 		return false;
-	}
-	
+	}	
 }
 
-void ApxModifier::matchData()
+void ApxModifier::matchData(bool det_option)
 {
-	bool det = detData();
+	bool det = true;
+	if (det_option == true)
+	{
+		det = detData();
+	}
+
 	if (det == true)
 	{
 		//Find GPS data and INS data with same time

@@ -27,6 +27,8 @@ private:
 	queue<RowGPHDT*> qGPHDT; //Attidude Queue (GPS)
 	queue<RowPTNL*> qPTNL;   //Event Queue
 	queue<Row*> qResult;     //Queue for matched result (by time)
+
+	queue<RowGPGGA*> qGPGGA_Det; //Location Queue for Determination
 		
 	char* filename; //Unmodified filename
 	char* newFilename; //Releative directory of modified filename

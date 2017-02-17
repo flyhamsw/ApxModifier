@@ -19,7 +19,7 @@ ApxModifier::ApxModifier(char* txt_filename)
 	filename = txt_filename;
 	f.open(filename);
 	loadData();
-	//matchData();
+	matchData();
 }
 
 void ApxModifier::loadData()
@@ -76,8 +76,9 @@ void ApxModifier::loadData()
 					line_stream.getline(checksum, 20, ',');
 
 					RowGPGGA* row = new RowGPGGA(time, lat, latHeading, lng, lngHeading, gpsQuality, numOfSV, HDOP, alt, altUnit, heightWGS84, heightWGS84Unit, DGPS, checksum);
-
+					
 					qGPGGA.push(row);
+					qGPGGA_Det.push(row);
 				}
 				else if (strcmp(lineHeader, "$PASHR") == 0)
 				{
@@ -106,7 +107,7 @@ void ApxModifier::loadData()
 					line_stream.getline(IMUStatus, 20, ',');
 
 					RowPASHR* row = new RowPASHR(time, heading, headingTrue, roll, pitch, heave, rollAccuracy, pitchAccuracy, headingAccuracy, aidingStatus, IMUStatus);
-
+					
 					qPASHR.push(row);
 				}
 				else if (strcmp(lineHeader, "$PTNL") == 0)

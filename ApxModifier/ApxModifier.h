@@ -34,5 +34,6 @@ private:
 	char* newFilename; //Releative directory of modified filename
 
 	void loadData();
-	void matchData();	
+	void matchData();
+	bool detData();
 };

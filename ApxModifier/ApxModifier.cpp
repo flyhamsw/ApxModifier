@@ -16,7 +16,7 @@ const double pi = 3.141592653589793238463;
 
 //Constant value for determination of running
 //In detData method, it will be determined to use the data if the average distance between each point are bigger than DET_RUNNING
-const double DET_RUNNING = 0.5;
+const double DET_RUNNING = 0.25;
 
 //Constant value for determination of cornering
 //In detData method, it will be determined to use the data if the average distance between each point and line connecting the first/last point are bigger than DET_CORNERING

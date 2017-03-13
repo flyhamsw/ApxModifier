@@ -491,8 +491,8 @@ void ApxModifier::interpolateData()
 				afterX = (afterX_deg + afterX_min / 60)*pi / 180;
 				afterY = (afterY_deg + afterY_min / 60)*pi / 180;
 
-				convertWGS84_to_TM(&beforeX, &beforeY);
-				convertWGS84_to_TM(&afterX, &afterY);
+				//convertWGS84_to_TM(&beforeX, &beforeY);
+				//convertWGS84_to_TM(&afterX, &afterY);
 
 				weightedHeading = atan2((afterY - beforeY), (afterX - beforeX)) * 180 / pi + 225;
 				weightedRoll = 0;
@@ -514,10 +514,10 @@ void ApxModifier::interpolateData()
 			double wLng_deg = ((weightedLng - wLng_min) / 100);
 
 			//Convert Deg, Min values to Radian
-			weightedLat = (wLat_deg + wLat_min / 60) * pi / 180;
-			weightedLng = (wLng_deg + wLng_min / 60) * pi / 180;
+			weightedLat = (wLat_deg + wLat_min / 60);
+			weightedLng = (wLng_deg + wLng_min / 60);
 
-			convertWGS84_to_TM(&weightedLng, &weightedLat);
+			//convertWGS84_to_TM(&weightedLng, &weightedLat);
 
 			//Store interpolated data
 			rowInterpolated = new RowInterpolated(weightedLng, weightedLat, weightedHeightWGS84, weightedHeading, weightedRoll, weightedPitch);

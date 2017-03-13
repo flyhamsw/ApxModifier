@@ -17,7 +17,7 @@ int main()
 	a->interpolateData();
 
 	//货 颇老 积己
-	char newFilename[200] = "D://test/2017-02-13_151557.txt";
+	char newFilename[200] = "D://test/test.txt";
 	a->writeNewFile(newFilename);
 	
 	return 0;

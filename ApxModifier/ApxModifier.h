@@ -12,10 +12,11 @@ public:
 	Row* rowBefore; //GPS-INS Data before the event
 	Row* rowAfter; //GPS-INS Data after the event
 	RowInterpolated* rowInterpolated; //Interpolated data
-	
-	ApxModifier(char*);
+
+	ApxModifier(char*, bool); //Target filename(char*) and determination option(true/false)
 	void interpolateData();
 	void writeNewFile(char*);
+	void printLocationData(char*);
 
 private:
 	ifstream f;
@@ -26,10 +27,13 @@ private:
 	queue<RowGPHDT*> qGPHDT; //Attidude Queue (GPS)
 	queue<RowPTNL*> qPTNL;   //Event Queue
 	queue<Row*> qResult;     //Queue for matched result (by time)
+
+	queue<RowGPGGA*> qGPGGA_Det; //Location Queue for Determination
 		
 	char* filename; //Unmodified filename
 	char* newFilename; //Releative directory of modified filename
 
 	void loadData();
-	void matchData();	
+	void matchData(bool);
+	bool detData();
 };

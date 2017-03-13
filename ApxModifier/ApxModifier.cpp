@@ -14,12 +14,69 @@ using namespace std;
 //Constant value for pi
 const double pi = 3.141592653589793238463;
 
-ApxModifier::ApxModifier(char* txt_filename)
+//Constant value for determination of running
+//In detData method, it will be determined to use the data if the average distance between each point are bigger than DET_RUNNING
+const double DET_RUNNING = 0.5;
+
+//Constant value for determination of cornering
+//In detData method, it will be determined to use the data if the average distance between each point and line connecting the first/last point are bigger than DET_CORNERING
+const double DET_CORNERING = 0.2;
+
+ApxModifier::ApxModifier(char* txt_filename, bool det_option)
 {
 	filename = txt_filename;
 	f.open(filename);
 	loadData();
-	matchData();
+	matchData(det_option);
+}
+
+//Copyright: http://m.blog.naver.com/tacma/20108668315
+void convertWGS84_to_TM(double *plon, double *plat)
+{
+	double lon, lat;
+	lon = *plon;
+	lat = *plat;
+	double m_arScaleFactor = 1;
+	double m_arLonCenter = 127 * pi / 180; //Projection center of Korean central belt 2010
+	double m_arLatCenter = 38 * pi / 180; //Projection center of Korean central belt 2010
+	double m_arFalseNorthing = 600000.0;
+	double m_arFalseEasting = 200000.0;
+	double x, y;
+	double m_dDstInd;
+	double m_arMajor = 6378137.0;
+	double m_arMinor = 6356752.3142;
+	double delta_lon; // Delta longitude (Given longitude - center longitude)
+	double sin_phi, cos_phi; // sin and cos value
+	double al, als; // temporary values
+	double b, c, t, tq; // temporary values
+	double con, n, ml; // cone constant, small m
+	double temp = m_arMinor / m_arMajor;
+	double m_ecc = 1.0 - temp * temp;
+	double m_eccp = (1 / temp)*(1 / temp) - 1;
+	double m_dDstE0 = 1.0 - 0.25 * m_ecc * (1.0 + m_ecc / 16.0 * (3.0 + 1.25 * m_ecc));
+	double m_dDstE1 = 0.375 * m_ecc * (1.0 + 0.25 * m_ecc * (1.0 + 0.46875 * m_ecc));
+	double m_dDstE2 = 0.05859375 * m_ecc * m_ecc * (1.0 + 0.75 * m_ecc);
+	double m_dDstE3 = m_ecc * m_ecc * m_ecc * (35.0 / 3072.0);
+	double m_dDstMl0 = m_arMajor * (m_dDstE0 * m_arLatCenter - m_dDstE1 * sin(2.0 * m_arLatCenter) + m_dDstE2 * sin(4.0 * m_arLatCenter) - m_dDstE3 * sin(6.0 * m_arLatCenter));
+	m_dDstInd = 0.0;
+	delta_lon = lon - m_arLonCenter;
+	sin_phi = sin(lat);
+	cos_phi = cos(lat);
+	b = 0;
+	x = 0.5 * m_arMajor * m_arScaleFactor * log((1.0 + b) / (1.0 - b));
+	con = acos(cos_phi * cos(delta_lon) / sqrt(1.0 - b * b));
+	al = cos_phi * delta_lon;
+	als = al * al;
+	c = m_eccp * cos_phi * cos_phi;
+	tq = tan(lat);
+	t = tq * tq;
+	con = 1.0 - m_ecc * sin_phi * sin_phi;
+	n = m_arMajor / sqrt(con);
+	ml = m_arMajor * (m_dDstE0 * lat - m_dDstE1 * sin(2.0 * lat) + m_dDstE2 * sin(4.0 * lat) - m_dDstE3 * sin(6.0 * lat));
+	x = m_arScaleFactor * n * al * (1.0 + als / 6.0 * (1.0 - t + c + als / 20.0 * (5.0 - 18.0 * t + t * t + 72.0 * c - 58.0 * m_eccp))) + m_arFalseEasting;
+	y = m_arScaleFactor * (ml - m_dDstMl0 + n * tq * (als * (0.5 + als / 24.0 * (5.0 - t + 9.0 * c + 4.0 * c * c + als / 30.0 * (61.0 - 58.0 * t + t * t + 600.0 * c - 330.0 * m_eccp))))) + m_arFalseNorthing;
+	*plon = x;
+	*plat = y;
 }
 
 void ApxModifier::loadData()
@@ -76,8 +133,9 @@ void ApxModifier::loadData()
 					line_stream.getline(checksum, 20, ',');
 
 					RowGPGGA* row = new RowGPGGA(time, lat, latHeading, lng, lngHeading, gpsQuality, numOfSV, HDOP, alt, altUnit, heightWGS84, heightWGS84Unit, DGPS, checksum);
-
+					
 					qGPGGA.push(row);
+					qGPGGA_Det.push(row);
 				}
 				else if (strcmp(lineHeader, "$PASHR") == 0)
 				{
@@ -106,22 +164,8 @@ void ApxModifier::loadData()
 					line_stream.getline(IMUStatus, 20, ',');
 
 					RowPASHR* row = new RowPASHR(time, heading, headingTrue, roll, pitch, heave, rollAccuracy, pitchAccuracy, headingAccuracy, aidingStatus, IMUStatus);
-
+					
 					qPASHR.push(row);
-				}
-				else if (strcmp(lineHeader, "$GPHDT") == 0)
-				{
-					char* heading = new char[20];
-					char* headingTrue = new char[20];
-					char* checksum = new char[20];
-
-					line_stream.getline(heading, 20, ',');
-					line_stream.getline(headingTrue, 20, ',');
-					line_stream.getline(checksum, 20, ',');
-
-					RowGPHDT* row = new RowGPHDT(heading, headingTrue, checksum);
-
-					qGPHDT.push(row);
 				}
 				else if (strcmp(lineHeader, "$PTNL") == 0)
 				{
@@ -151,114 +195,191 @@ void ApxModifier::loadData()
 
 		cout << "# of GPGGA(Location): " << qGPGGA.size() << endl
 			<< "# of PASHR(Attitude): " << qPASHR.size() << endl
-			<< "# of GPHDT(GPS Heading)): " << qGPHDT.size() << endl
 			<< "# of PTNL(Event Time): " << qPTNL.size() << endl << endl;
 	}
 
 }
 
-void ApxModifier::matchData()
+bool ApxModifier::detData()
 {
-	//Find GPS data and INS data with same time
-	cout << "Matching Data...";
+	queue<double> qDistance;
+	
+	queue<double> qxTM;
+	queue<double> qyTM;
 
-	while (!(qGPGGA.empty()) && !(qPASHR.empty()))
+	double averageDist = 0;
+	double averageFLDist = 0;
+
+	int n = size(qGPGGA_Det);
+
+	double x_first;
+	double y_first;
+	double x_last;
+	double y_last;
+
+	//Average distance between the points
+	for (int i = 0; i < n - 1; i++)
 	{
-		double time_GPGGA;
-		double time_PASHR;
-		double time_GPHDT;
+		RowGPGGA* rowA = qGPGGA_Det.front();
+		qGPGGA_Det.pop();
+		RowGPGGA* rowB = qGPGGA_Det.front();
+		
+		double x_a = atof(rowA->lng);
+		double y_a = atof(rowA->lat);
 
-		RowGPGGA* currRowGPGGA = qGPGGA.front();
-		RowPASHR* currRowPASHR = qPASHR.front();
-		RowGPHDT* currRowGPHDT = qGPHDT.front();
+		double x_b = atof(rowB->lng);
+		double y_b = atof(rowB->lat);
 
-		time_GPGGA = atof(currRowGPGGA->time);
-		time_PASHR = atof(currRowPASHR->time);
-		//time_GPHDT = atof(currRowGPHDT->time);
+		//Split weighted values into Degree and Minute
+		double x_a_min = fmod(x_a, 100);
+		double x_a_deg = ((x_a - x_a_min) / 100);
 
-		//Pop queue with lower time value
-		if (time_GPGGA < time_PASHR)
+		double x_b_min = fmod(x_b, 100);
+		double x_b_deg = ((x_b - x_b_min) / 100);
+
+		double y_a_min = fmod(y_a, 100);
+		double y_a_deg = ((y_a - y_a_min) / 100);
+
+		double y_b_min = fmod(y_b, 100);
+		double y_b_deg = ((y_b - y_b_min) / 100);
+
+		//Convert Deg, Min values to Radian
+		x_a = (x_a_deg + x_a_min / 60) * pi / 180;
+		x_b = (x_b_deg + x_b_min / 60) * pi / 180;
+
+		y_a = (y_a_deg + y_a_min / 60) * pi / 180;
+		y_b = (y_b_deg + y_b_min / 60) * pi / 180;
+
+		convertWGS84_to_TM(&x_a, &y_a);
+		convertWGS84_to_TM(&x_b, &y_b);
+			
+		double distance = sqrt(pow((x_b - x_a), 2) + pow((y_b - y_a), 2));
+
+		qDistance.push(distance);
+
+		if (i != 0)
 		{
-			qGPGGA.pop();
+			qxTM.push(x_a);
+			qyTM.push(y_a);
 		}
-		else if (time_GPGGA > time_PASHR)
+
+		if (i == 0)
 		{
-			qPASHR.pop();
+			x_first = x_a;
+			y_first = y_a;
 		}
-		//If time data of each queue are same, store them, and pop both queues
-		else if (time_GPGGA == time_PASHR)
+		else if (i == n - 2)
 		{
-			if (time_GPGGA < time_GPHDT)
+			x_last = x_b;
+			y_last = y_b;
+		}
+	}
+
+	int n1 = size(qDistance);
+
+	for (int i = 0; i < n1; i++)
+	{
+		averageDist += qDistance.front();
+		qDistance.pop();
+	}
+
+	int n2 = size(qxTM);
+
+	//Average distance between points and FL line (FL line: First-Last Line; a line connecting the first point and the last point)
+	for (int i = 0; i < n2; i++)
+	{
+		double x = qxTM.front();
+		double y = qyTM.front();
+
+		qxTM.pop();
+		qyTM.pop();
+
+		double a = (y_last - y_first) / (x_last - x_first);
+		double b = -1;
+		double c = y_first - a*x_first;
+
+		double d = abs(a*x + b*y + c) / sqrt(pow(a, 2) + pow(b, 2));
+
+		averageFLDist += d;
+	}
+
+	averageDist = averageDist / n1;
+	averageFLDist = averageFLDist / n2;
+
+	//Determination whether to use data or not
+	if (averageDist > DET_RUNNING)
+	{
+		if (averageFLDist < DET_CORNERING)
+		{
+			return true;
+		}
+		else
+		{
+			cout << "UAV was cornering" << endl;
+			return false;
+		}
+	}
+	else
+	{
+		cout << "UAV was too slow" << endl;
+		return false;
+	}	
+}
+
+void ApxModifier::matchData(bool det_option)
+{
+	bool det = true;
+	if (det_option == true)
+	{
+		det = detData();
+	}
+
+	if (det == true)
+	{
+		//Find GPS data and INS data with same time
+		cout << "Matching Data...";
+
+		while (!(qGPGGA.empty()) && !(qPASHR.empty()))
+		{
+			double time_GPGGA;
+			double time_PASHR;
+			//double time_GPHDT;
+
+			RowGPGGA* currRowGPGGA = qGPGGA.front();
+			RowPASHR* currRowPASHR = qPASHR.front();
+			RowGPHDT* currRowGPHDT = NULL;
+
+			time_GPGGA = atof(currRowGPGGA->time);
+			time_PASHR = atof(currRowPASHR->time);
+			//time_GPHDT = atof(currRowGPHDT->time);
+
+			//Pop queue with lower time value
+			if (time_GPGGA < time_PASHR)
 			{
 				qGPGGA.pop();
+			}
+			else if (time_GPGGA > time_PASHR)
+			{
 				qPASHR.pop();
 			}
-			else if (time_GPGGA > time_GPHDT)
-			{
-				qGPHDT.pop();
-			}
-			else if (time_GPGGA == time_GPHDT)
+			//If time data of each queue are same, store them, and pop both queues
+			else if (time_GPGGA == time_PASHR)
 			{
 				Row* matchedRow = new Row(currRowGPGGA, currRowPASHR, currRowGPHDT);
 				qResult.push(matchedRow);
 				qGPGGA.pop();
 				qPASHR.pop();
-				qGPHDT.pop();
-			}			
+			}
 		}
+
+		cout << "OK" << endl;
+		cout << "# of Result Queue: " << qResult.size() << endl << endl;
+	}
+	else
+	{
+		cout << "Determined not to use this data" << endl;
 	}
 
-	cout << "OK" << endl;
-	cout << "# of Result Queue: " << qResult.size() << endl << endl;
-}
-
-//Copyright: http://m.blog.naver.com/tacma/20108668315
-void convertWGS84_to_TM(double *plon, double *plat)
-{
-	double lon, lat;
-	lon = *plon;
-	lat = *plat;
-	double m_arScaleFactor = 1;
-	double m_arLonCenter = 127 * pi / 180; //Projection center of Korean central belt 2010
-	double m_arLatCenter = 38 * pi / 180; //Projection center of Korean central belt 2010
-	double m_arFalseNorthing = 600000.0;
-	double m_arFalseEasting = 200000.0;
-	double x, y;
-	double m_dDstInd;
-	double m_arMajor = 6378137.0;
-	double m_arMinor = 6356752.3142;
-	double delta_lon; // Delta longitude (Given longitude - center longitude)
-	double sin_phi, cos_phi; // sin and cos value
-	double al, als; // temporary values
-	double b, c, t, tq; // temporary values
-	double con, n, ml; // cone constant, small m
-	double temp = m_arMinor / m_arMajor;
-	double m_ecc = 1.0 - temp * temp;
-	double m_eccp = (1 / temp)*(1 / temp) - 1;
-	double m_dDstE0 = 1.0 - 0.25 * m_ecc * (1.0 + m_ecc / 16.0 * (3.0 + 1.25 * m_ecc));
-	double m_dDstE1 = 0.375 * m_ecc * (1.0 + 0.25 * m_ecc * (1.0 + 0.46875 * m_ecc));
-	double m_dDstE2 = 0.05859375 * m_ecc * m_ecc * (1.0 + 0.75 * m_ecc);
-	double m_dDstE3 = m_ecc * m_ecc * m_ecc * (35.0 / 3072.0);
-	double m_dDstMl0 = m_arMajor * (m_dDstE0 * m_arLatCenter - m_dDstE1 * sin(2.0 * m_arLatCenter) + m_dDstE2 * sin(4.0 * m_arLatCenter) - m_dDstE3 * sin(6.0 * m_arLatCenter));
-	m_dDstInd = 0.0;
-	delta_lon = lon - m_arLonCenter;
-	sin_phi = sin(lat);
-	cos_phi = cos(lat);
-	b = 0;
-	x = 0.5 * m_arMajor * m_arScaleFactor * log((1.0 + b) / (1.0 - b));
-	con = acos(cos_phi * cos(delta_lon) / sqrt(1.0 - b * b));
-	al = cos_phi * delta_lon;
-	als = al * al;
-	c = m_eccp * cos_phi * cos_phi;
-	tq = tan(lat);
-	t = tq * tq;
-	con = 1.0 - m_ecc * sin_phi * sin_phi;
-	n = m_arMajor / sqrt(con);
-	ml = m_arMajor * (m_dDstE0 * lat - m_dDstE1 * sin(2.0 * lat) + m_dDstE2 * sin(4.0 * lat) - m_dDstE3 * sin(6.0 * lat));
-	x = m_arScaleFactor * n * al * (1.0 + als / 6.0 * (1.0 - t + c + als / 20.0 * (5.0 - 18.0 * t + t * t + 72.0 * c - 58.0 * m_eccp))) + m_arFalseEasting;
-	y = m_arScaleFactor * (ml - m_dDstMl0 + n * tq * (als * (0.5 + als / 24.0 * (5.0 - t + 9.0 * c + 4.0 * c * c + als / 30.0 * (61.0 - 58.0 * t + t * t + 600.0 * c - 330.0 * m_eccp))))) + m_arFalseNorthing;
-	*plon = x;
-	*plat = y;
 }
 
 void ApxModifier::interpolateData()
@@ -293,32 +414,39 @@ void ApxModifier::interpolateData()
 				break;
 			}
 		}
+
 		cout << "OK" << endl;
-		cout << "The photo was taken between " << rowBefore->rowGPGGA->time << " and " << rowAfter->rowGPGGA->time << endl << endl;
-		cout << "Interpolation...";
 
-		diffA = abs(diffA);
-		diffB = abs(diffB);
-
-		//Interpolate by time difference
-		double weightA = 1 / diffA;
-		double weightB = 1 / diffB;
-
-		double weightedLat;
-		double weightedLng;
-		double weightedHeightWGS84;
-		double weightedHeading;
-		double weightedRoll;
-		double weightedPitch;
-
-		weightedLat = (atof(rowBefore->rowGPGGA->lat)*weightA + atof(rowAfter->rowGPGGA->lat)*weightB) / (weightA + weightB);
-		weightedLng = (atof(rowBefore->rowGPGGA->lng)*weightA + atof(rowAfter->rowGPGGA->lng)*weightB) / (weightA + weightB);
-		weightedHeightWGS84 = (atof(rowBefore->rowGPGGA->heightWGS84)*weightA + atof(rowAfter->rowGPGGA->heightWGS84)*weightB) / (weightA + weightB);
-		
-		//Select Attitude data by priority: 1-INS, 2-GPS Heading, 3-Arctangent
-		if (atof(rowBefore->rowPASHR->heading) == 0 || atof(rowAfter->rowPASHR->heading) == 0)
+		if (rowBefore == nullptr || rowAfter == nullptr)
 		{
-			if (atof(rowBefore->rowGPHDT->heading) == 0 || atof(rowAfter->rowGPHDT->heading) == 0)
+			cout << "Row before/after the event is NULL" << endl;
+			rowInterpolated = nullptr;
+		}
+		else
+		{
+			cout << "The photo was taken between " << rowBefore->rowGPGGA->time << " and " << rowAfter->rowGPGGA->time << endl << endl;
+			cout << "Interpolation...";
+
+			diffA = abs(diffA);
+			diffB = abs(diffB);
+
+			//Interpolate by time difference
+			double weightA = 1 / diffA;
+			double weightB = 1 / diffB;
+
+			double weightedLat;
+			double weightedLng;
+			double weightedHeightWGS84;
+			double weightedHeading;
+			double weightedRoll;
+			double weightedPitch;
+
+			weightedLat = (atof(rowBefore->rowGPGGA->lat)*weightA + atof(rowAfter->rowGPGGA->lat)*weightB) / (weightA + weightB);
+			weightedLng = (atof(rowBefore->rowGPGGA->lng)*weightA + atof(rowAfter->rowGPGGA->lng)*weightB) / (weightA + weightB);
+			weightedHeightWGS84 = (atof(rowBefore->rowGPGGA->alt)*weightA + atof(rowAfter->rowGPGGA->alt)*weightB) / (weightA + weightB);
+
+			//Select Attitude data by priority: 1-INS, 2-GPS Heading, 3-Arctangent
+			if (atof(rowBefore->rowPASHR->heading) == 0 || atof(rowAfter->rowPASHR->heading) == 0)
 			{
 				//Priority #3: Arctangent
 				double beforeX = atof(rowBefore->rowGPGGA->lng);
@@ -344,45 +472,38 @@ void ApxModifier::interpolateData()
 				convertWGS84_to_TM(&beforeX, &beforeY);
 				convertWGS84_to_TM(&afterX, &afterY);
 
-				weightedHeading = atan2((afterY - beforeY), (afterX - beforeX));
+				weightedHeading = atan2((afterY - beforeY), (afterX - beforeX)) * 180 / pi + 225;
 				weightedRoll = 0;
 				weightedPitch = 0;
 			}
 			else
 			{
-				//Priority #2: GPS Heading
-				weightedHeading = (atof(rowBefore->rowGPHDT->heading)*weightA + atof(rowAfter->rowGPHDT->heading)*weightB) / (weightA + weightB);
-				weightedRoll = 0;
-				weightedPitch = 0;
+				//Priority #1: INS
+				weightedHeading = (atof(rowBefore->rowPASHR->heading)*weightA + atof(rowAfter->rowPASHR->heading)*weightB) / (weightA + weightB) + 90;
+				weightedRoll = (atof(rowBefore->rowPASHR->roll)*weightA + atof(rowAfter->rowPASHR->roll)*weightB) / (weightA + weightB);
+				weightedPitch = (atof(rowBefore->rowPASHR->pitch)*weightA + atof(rowAfter->rowPASHR->pitch)*weightB) / (weightA + weightB);
 			}
+
+			//Split weighted values into Degree and Minute
+			double wLat_min = fmod(weightedLat, 100);
+			double wLat_deg = ((weightedLat - wLat_min) / 100);
+
+			double wLng_min = fmod(weightedLng, 100);
+			double wLng_deg = ((weightedLng - wLng_min) / 100);
+
+			//Convert Deg, Min values to Radian
+			weightedLat = (wLat_deg + wLat_min / 60) * pi / 180;
+			weightedLng = (wLng_deg + wLng_min / 60) * pi / 180;
+
+			convertWGS84_to_TM(&weightedLng, &weightedLat);
+
+			//Store interpolated data
+			rowInterpolated = new RowInterpolated(weightedLng, weightedLat, weightedHeightWGS84, weightedHeading, weightedRoll, weightedPitch);
+
+			cout << "OK" << endl << endl;
+
+			f.close();
 		}
-		else
-		{
-			//Priority #1: INS
-			weightedHeading = (atof(rowBefore->rowPASHR->heading)*weightA + atof(rowAfter->rowPASHR->heading)*weightB) / (weightA + weightB);
-			weightedRoll = (atof(rowBefore->rowPASHR->roll)*weightA + atof(rowAfter->rowPASHR->roll)*weightB) / (weightA + weightB);
-			weightedPitch = (atof(rowBefore->rowPASHR->pitch)*weightA + atof(rowAfter->rowPASHR->pitch)*weightB) / (weightA + weightB);
-		}		
-
-		//Split weighted values into Degree and Minute
-		double wLat_min = fmod(weightedLat, 100);
-		double wLat_deg = ((weightedLat - wLat_min) / 100);
-
-		double wLng_min = fmod(weightedLng, 100);
-		double wLng_deg = ((weightedLng - wLng_min) / 100);
-
-		//Convert Deg, Min values to Radian
-		weightedLat = (wLat_deg + wLat_min / 60) * pi / 180;
-		weightedLng = (wLng_deg + wLng_min / 60) * pi / 180;
-
-		convertWGS84_to_TM(&weightedLng, &weightedLat);
-		
-		//Store interpolated data
-		rowInterpolated = new RowInterpolated(weightedLng, weightedLat, weightedHeightWGS84, weightedHeading, weightedRoll, weightedPitch);
-
-		cout << "OK" << endl << endl;
-
-		f.close();
 	}
 
 }
@@ -416,7 +537,7 @@ void ApxModifier::writeNewFile(char* txt_filename)
 		}
 
 		string jpgName = filename;
-		jpgName = jpgName.substr(slIdx + 1, dotIdx - slIdx - 1);
+		jpgName = jpgName.substr(slIdx + 1, dotIdx - slIdx - 1); //.t
 
 		fnew.open(filename);
 		fnew.precision(8);
@@ -427,7 +548,7 @@ void ApxModifier::writeNewFile(char* txt_filename)
 
 		if (fnew.is_open())
 		{
-			fnew << jpgName << ".jpg" << '\t' << rowInterpolated->X << '\t' << rowInterpolated->Y << '\t' << rowInterpolated->Z << '\t' << rowInterpolated->roll << '\t' << rowInterpolated->pitch << '\t' << rowInterpolated->heading;
+			fnew << jpgName << ".jpg" << '\t' << rowInterpolated->X << '\t' << rowInterpolated->Y << '\t' << rowInterpolated->Z << '\t' << rowInterpolated->roll*pi/180 << '\t' << rowInterpolated->pitch*pi / 180 << '\t' << rowInterpolated->heading*pi / 180;
 		}
 
 		fnew.close();
@@ -436,4 +557,43 @@ void ApxModifier::writeNewFile(char* txt_filename)
 
 	}
 
+}
+
+void ApxModifier::printLocationData(char* txt_filename)
+{
+	int i = 0;
+
+	filename = txt_filename;
+
+	fnew.open(filename);
+	fnew.precision(8);
+	fnew.setf(ios::fixed);
+	fnew.setf(ios::showpoint);
+
+	while (!qGPGGA.empty())
+	{
+		i++;
+
+		RowGPGGA* r = qGPGGA.front();
+
+		//Split values into Degree and Minute
+		double lat_min = fmod(atof(r->lat), 100);
+		double lat_deg = ((atof(r->lat) - lat_min) / 100);
+
+		double lng_min = fmod(atof(r->lng), 100);
+		double lng_deg = ((atof(r->lng) - lng_min) / 100);
+
+		double lat = lat_deg + lat_min / 60;
+		double lng = lng_deg + lng_min / 60;
+
+
+		if (fnew.is_open())
+		{
+			fnew << i << '\t' << lat << '\t' << lng << endl;
+		}
+
+		qGPGGA.pop();
+	}
+
+	fnew.close();
 }

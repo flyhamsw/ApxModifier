@@ -200,6 +200,24 @@ void ApxModifier::loadData()
 
 }
 
+void convertWGS84toXYZ(double* x, double* y, double* z)
+{
+	double a = 6378137.0;
+	double b = 6356752.314245;
+	double e_sq = (a*a - b*b) / (a*a);
+
+	double k = 1 - e_sq * sin(*y) * sin(*y);
+	double nu = a / sqrt(k);
+
+	double X = (nu + *z)*cos(*y)*cos(*x);
+	double Y = (nu + *z)*cos(*y)*sin(*x);
+	double Z = ((1 - e_sq)*nu + *z)*sin(*y);
+
+	*x = X;
+	*y = Y;
+	*z = Z;
+}
+
 bool ApxModifier::detData()
 {
 	queue<double> qDistance;
@@ -243,17 +261,20 @@ bool ApxModifier::detData()
 		double y_b_min = fmod(y_b, 100);
 		double y_b_deg = ((y_b - y_b_min) / 100);
 
+		double z_a = atof(rowA->alt);
+		double z_b = atof(rowB->alt);
+
 		//Convert Deg, Min values to Radian
-		x_a = (x_a_deg + x_a_min / 60) * pi / 180;
-		x_b = (x_b_deg + x_b_min / 60) * pi / 180;
+		x_a = (x_a_deg + x_a_min / 60) * pi / 180; //Longitude of point A
+		x_b = (x_b_deg + x_b_min / 60) * pi / 180; //Longitude of point B
 
-		y_a = (y_a_deg + y_a_min / 60) * pi / 180;
-		y_b = (y_b_deg + y_b_min / 60) * pi / 180;
+		y_a = (y_a_deg + y_a_min / 60) * pi / 180; //Latitude of point A
+		y_b = (y_b_deg + y_b_min / 60) * pi / 180; //Latitude of point B
 
-		convertWGS84_to_TM(&x_a, &y_a);
-		convertWGS84_to_TM(&x_b, &y_b);
-			
-		double distance = sqrt(pow((x_b - x_a), 2) + pow((y_b - y_a), 2));
+		convertWGS84toXYZ(&x_a, &y_a, &z_a);
+		convertWGS84toXYZ(&x_b, &y_b, &z_b);
+	
+		double distance = sqrt(pow((x_b - x_a), 2) + pow((y_b - y_a), 2) + pow((z_b - z_a), 2));
 
 		qDistance.push(distance);
 
@@ -280,6 +301,7 @@ bool ApxModifier::detData()
 	for (int i = 0; i < n1; i++)
 	{
 		averageDist += qDistance.front();
+		cout << qDistance.front() << endl;
 		qDistance.pop();
 	}
 
@@ -557,43 +579,4 @@ void ApxModifier::writeNewFile(char* txt_filename)
 
 	}
 
-}
-
-void ApxModifier::printLocationData(char* txt_filename)
-{
-	int i = 0;
-
-	filename = txt_filename;
-
-	fnew.open(filename);
-	fnew.precision(8);
-	fnew.setf(ios::fixed);
-	fnew.setf(ios::showpoint);
-
-	while (!qGPGGA.empty())
-	{
-		i++;
-
-		RowGPGGA* r = qGPGGA.front();
-
-		//Split values into Degree and Minute
-		double lat_min = fmod(atof(r->lat), 100);
-		double lat_deg = ((atof(r->lat) - lat_min) / 100);
-
-		double lng_min = fmod(atof(r->lng), 100);
-		double lng_deg = ((atof(r->lng) - lng_min) / 100);
-
-		double lat = lat_deg + lat_min / 60;
-		double lng = lng_deg + lng_min / 60;
-
-
-		if (fnew.is_open())
-		{
-			fnew << i << '\t' << lat << '\t' << lng << endl;
-		}
-
-		qGPGGA.pop();
-	}
-
-	fnew.close();
 }

@@ -570,7 +570,7 @@ void ApxModifier::writeNewFile(char* txt_filename)
 
 		if (fnew.is_open())
 		{
-			fnew << jpgName << ".jpg" << '\t' << rowInterpolated->X << '\t' << rowInterpolated->Y << '\t' << rowInterpolated->Z << '\t' << rowInterpolated->roll*pi/180 << '\t' << rowInterpolated->pitch*pi / 180 << '\t' << rowInterpolated->heading*pi / 180;
+			fnew << jpgName << ".jpg" << '\t' << rowInterpolated->Y << '\t' << rowInterpolated->X << '\t' << rowInterpolated->Z << '\t' << rowInterpolated->roll*pi/180 << '\t' << rowInterpolated->pitch*pi / 180 << '\t' << rowInterpolated->heading*pi / 180;
 		}
 
 		fnew.close();

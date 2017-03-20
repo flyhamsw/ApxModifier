@@ -200,10 +200,11 @@ void ApxModifier::loadData()
 
 }
 
+//Convert Geodetic coordinate to Geocentric coordinate
 void convertWGS84toXYZ(double* x, double* y, double* z)
 {
-	double a = 6378137.0;
-	double b = 6356752.314245;
+	double a = 6378137.0; //Semi-major axis of earth (m)
+	double b = 6356752.314245; //Semi-minor axis of earth (m) 
 	double e_sq = (a*a - b*b) / (a*a);
 
 	double k = 1 - e_sq * sin(*y) * sin(*y);
@@ -222,8 +223,8 @@ bool ApxModifier::detData()
 {
 	queue<double> qDistance;
 	
-	queue<double> qxTM;
-	queue<double> qyTM;
+	queue<double> qx;
+	queue<double> qy;
 
 	double averageDist = 0;
 	double averageFLDist = 0;
@@ -280,8 +281,8 @@ bool ApxModifier::detData()
 
 		if (i != 0)
 		{
-			qxTM.push(x_a);
-			qyTM.push(y_a);
+			qx.push(x_a);
+			qy.push(y_a);
 		}
 
 		if (i == 0)
@@ -301,20 +302,20 @@ bool ApxModifier::detData()
 	for (int i = 0; i < n1; i++)
 	{
 		averageDist += qDistance.front();
-		cout << qDistance.front() << endl;
+		//cout << qDistance.front() << endl;
 		qDistance.pop();
 	}
 
-	int n2 = size(qxTM);
+	int n2 = size(qx);
 
 	//Average distance between points and FL line (FL line: First-Last Line; a line connecting the first point and the last point)
 	for (int i = 0; i < n2; i++)
 	{
-		double x = qxTM.front();
-		double y = qyTM.front();
+		double x = qx.front();
+		double y = qy.front();
 
-		qxTM.pop();
-		qyTM.pop();
+		qx.pop();
+		qy.pop();
 
 		double a = (y_last - y_first) / (x_last - x_first);
 		double b = -1;
@@ -562,7 +563,7 @@ void ApxModifier::writeNewFile(char* txt_filename)
 		jpgName = jpgName.substr(slIdx + 1, dotIdx - slIdx - 1); //.t
 
 		fnew.open(filename);
-		fnew.precision(8);
+		fnew.precision(15);
 		fnew.setf(ios::fixed);
 		fnew.setf(ios::showpoint);
 
@@ -570,7 +571,7 @@ void ApxModifier::writeNewFile(char* txt_filename)
 
 		if (fnew.is_open())
 		{
-			fnew << jpgName << ".jpg" << '\t' << rowInterpolated->Y << '\t' << rowInterpolated->X << '\t' << rowInterpolated->Z << '\t' << rowInterpolated->roll*pi/180 << '\t' << rowInterpolated->pitch*pi / 180 << '\t' << rowInterpolated->heading*pi / 180;
+			fnew << jpgName << ".jpg" << '\t' << rowInterpolated->X << '\t' << rowInterpolated->Y << '\t' << rowInterpolated->Z << '\t' << rowInterpolated->roll*pi/180 << '\t' << rowInterpolated->pitch*pi / 180 << '\t' << rowInterpolated->heading*pi / 180;
 		}
 
 		fnew.close();

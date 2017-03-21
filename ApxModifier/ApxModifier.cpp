@@ -509,7 +509,7 @@ void ApxModifier::interpolateData()
 }
 
 
-void ApxModifier::writeNewFile(char* txt_filename)
+RowInterpolated* ApxModifier::writeNewFile(char* txt_filename)
 {
 	if (rowInterpolated == NULL)
 	{
@@ -555,6 +555,7 @@ void ApxModifier::writeNewFile(char* txt_filename)
 
 		cout << "OK" << endl;
 
+		return rowInterpolated;
 	}
 
 }

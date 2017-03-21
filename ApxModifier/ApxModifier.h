@@ -15,7 +15,7 @@ public:
 
 	ApxModifier(char*, bool); //Target filename(char*) and determination option(true/false)
 	void interpolateData();
-	void writeNewFile(char*);
+	RowInterpolated* writeNewFile(char*);
 	void printLocationData(char*);
 
 private:

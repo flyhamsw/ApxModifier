@@ -13,7 +13,7 @@ public:
 	Row* rowAfter; //GPS-INS Data after the event
 	RowInterpolated* rowInterpolated; //Interpolated data
 
-	ApxModifier(char*, bool); //Target filename(char*) and determination option(true/false)
+	ApxModifier(char*, bool, bool); //Target filename(char*), cornering determination option(true/false), attitude priority option (true: auto priority, false: use arctangent)
 	void interpolateData();
 	void writeNewFile(char*);
 	void printLocationData(char*);
@@ -32,6 +32,8 @@ private:
 		
 	char* filename; //Unmodified filename
 	char* newFilename; //Releative directory of modified filename
+
+	bool priority_option;
 
 	void loadData();
 	void matchData(bool);

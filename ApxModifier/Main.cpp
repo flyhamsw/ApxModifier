@@ -4,20 +4,41 @@
 #include <iostream>
 #include <math.h>
 
-int main()
+void runApxModifier(char* inputFilename, char* outputFilename)
 {
-	char* filename; //기존 파일명
-
-					//기존 파일 로드
-	filename = "D:/data_wgs84/original/2017-02-13_151445_apx.txt";
-	ApxModifier* a = new ApxModifier(filename, false);
+	ApxModifier* a = new ApxModifier(inputFilename, true, true);
 
 	//이벤트 전, 후 데이터 검색 및 계산
 	a->interpolateData();
 
 	//새 파일 생성
-	char newFilename[200] = "D://data_wgs84/test-tm.txt";
-	a->writeNewFile(newFilename);
+	a->writeNewFile(outputFilename);
+}
+
+void runApxModifier_false(char* inputFilename, char* outputFilename)
+{
+	ApxModifier* a = new ApxModifier(inputFilename, true, false);
+
+	//이벤트 전, 후 데이터 검색 및 계산
+	a->interpolateData();
+
+	//새 파일 생성
+	a->writeNewFile(outputFilename);
+}
+
+int main()
+{
+	runApxModifier_false("D://오픈소스/atan-INS 비교/2017-02-13_atan/original/2017-02-13_151217_apx.txt", "D://오픈소스/atan-INS 비교/2017-02-13_atan/2017-02-13_151217.txt");
+	runApxModifier_false("D://오픈소스/atan-INS 비교/2017-02-13_atan/original/2017-02-13_151221_apx.txt", "D://오픈소스/atan-INS 비교/2017-02-13_atan/2017-02-13_151221.txt");
+	runApxModifier_false("D://오픈소스/atan-INS 비교/2017-02-13_atan/original/2017-02-13_151225_apx.txt", "D://오픈소스/atan-INS 비교/2017-02-13_atan/2017-02-13_151225.txt");
+	runApxModifier_false("D://오픈소스/atan-INS 비교/2017-02-13_atan/original/2017-02-13_151229_apx.txt", "D://오픈소스/atan-INS 비교/2017-02-13_atan/2017-02-13_151229.txt");
+	runApxModifier_false("D://오픈소스/atan-INS 비교/2017-02-13_atan/original/2017-02-13_151233_apx.txt", "D://오픈소스/atan-INS 비교/2017-02-13_atan/2017-02-13_151233.txt");
+
+	runApxModifier("D://오픈소스/atan-INS 비교/2017-02-13_INS/original/2017-02-13_151217_apx.txt", "D://오픈소스/atan-INS 비교/2017-02-13_INS/2017-02-13_151217.txt");
+	runApxModifier("D://오픈소스/atan-INS 비교/2017-02-13_INS/original/2017-02-13_151221_apx.txt", "D://오픈소스/atan-INS 비교/2017-02-13_INS/2017-02-13_151221.txt");
+	runApxModifier("D://오픈소스/atan-INS 비교/2017-02-13_INS/original/2017-02-13_151225_apx.txt", "D://오픈소스/atan-INS 비교/2017-02-13_INS/2017-02-13_151225.txt");
+	runApxModifier("D://오픈소스/atan-INS 비교/2017-02-13_INS/original/2017-02-13_151229_apx.txt", "D://오픈소스/atan-INS 비교/2017-02-13_INS/2017-02-13_151229.txt");
+	runApxModifier("D://오픈소스/atan-INS 비교/2017-02-13_INS/original/2017-02-13_151233_apx.txt", "D://오픈소스/atan-INS 비교/2017-02-13_INS/2017-02-13_151233.txt");
 
 	return 0;
 }

@@ -22,12 +22,13 @@ const double DET_RUNNING = 0.25;
 //In detData method, it will be determined to use the data if the average distance between each point and line connecting the first/last point are bigger than DET_CORNERING
 const double DET_CORNERING = 0.2;
 
-ApxModifier::ApxModifier(char* txt_filename, bool det_option)
+ApxModifier::ApxModifier(char* txt_filename, bool det_option, bool priority_option)
 {
 	filename = txt_filename;
 	f.open(filename);
 	loadData();
 	matchData(det_option);
+	this->priority_option = priority_option;
 }
 
 //Copyright: http://m.blog.naver.com/tacma/20108668315
@@ -469,7 +470,7 @@ void ApxModifier::interpolateData()
 			weightedHeightWGS84 = (atof(rowBefore->rowGPGGA->alt)*weightA + atof(rowAfter->rowGPGGA->alt)*weightB) / (weightA + weightB);
 
 			//Select Attitude data by priority: 1-INS, 2-GPS Heading, 3-Arctangent
-			if (atof(rowBefore->rowPASHR->heading) == 0 || atof(rowAfter->rowPASHR->heading) == 0)
+			if ((atof(rowBefore->rowPASHR->heading) == 0 || atof(rowAfter->rowPASHR->heading) == 0) || priority_option == false)
 			{
 				//Priority #3: Arctangent
 				double beforeX = atof(rowBefore->rowGPGGA->lng);
@@ -495,14 +496,14 @@ void ApxModifier::interpolateData()
 				//convertWGS84_to_TM(&beforeX, &beforeY);
 				//convertWGS84_to_TM(&afterX, &afterY);
 
-				weightedHeading = atan2((afterY - beforeY), (afterX - beforeX)) * 180 / pi + 225;
+				weightedHeading = atan2((afterY - beforeY), (afterX - beforeX)) * 180 / pi;
 				weightedRoll = 0;
 				weightedPitch = 0;
 			}
 			else
 			{
 				//Priority #1: INS
-				weightedHeading = (atof(rowBefore->rowPASHR->heading)*weightA + atof(rowAfter->rowPASHR->heading)*weightB) / (weightA + weightB) + 90;
+				weightedHeading = (atof(rowBefore->rowPASHR->heading)*weightA + atof(rowAfter->rowPASHR->heading)*weightB) / (weightA + weightB);
 				weightedRoll = (atof(rowBefore->rowPASHR->roll)*weightA + atof(rowAfter->rowPASHR->roll)*weightB) / (weightA + weightB);
 				weightedPitch = (atof(rowBefore->rowPASHR->pitch)*weightA + atof(rowAfter->rowPASHR->pitch)*weightB) / (weightA + weightB);
 			}

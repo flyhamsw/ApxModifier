@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string>
+#include "SystemCalibration.h"
+#include <opencv2\highgui.hpp>
 
 using namespace std;
 
@@ -508,6 +510,12 @@ void ApxModifier::interpolateData()
 				weightedPitch = (atof(rowBefore->rowPASHR->pitch)*weightA + atof(rowAfter->rowPASHR->pitch)*weightB) / (weightA + weightB);
 			}
 
+			//Apply system calibration (2017/3/27)
+			//weightedHeading = weightedHeading * pi / 180;
+			//weightedRoll = weightedRoll * pi / 180;
+			//weightedPitch = weightedPitch * pi / 180;
+			//SystemCalibration(&weightedHeading, &weightedRoll, &weightedPitch);
+
 			//Split weighted values into Degree and Minute
 			double wLat_min = fmod(weightedLat, 100);
 			double wLat_deg = ((weightedLat - wLat_min) / 100);
@@ -522,7 +530,7 @@ void ApxModifier::interpolateData()
 			//convertWGS84_to_TM(&weightedLng, &weightedLat);
 
 			//Store interpolated data
-			rowInterpolated = new RowInterpolated(weightedLng, weightedLat, weightedHeightWGS84, weightedHeading, weightedRoll, weightedPitch);
+			rowInterpolated = new RowInterpolated(weightedLng, weightedLat, weightedHeightWGS84, weightedHeading, weightedRoll, weightedPitch) + 75;
 
 			cout << "OK" << endl << endl;
 
@@ -573,6 +581,7 @@ void ApxModifier::writeNewFile(char* txt_filename)
 		if (fnew.is_open())
 		{
 			fnew << jpgName << ".jpg" << '\t' << rowInterpolated->X << '\t' << rowInterpolated->Y << '\t' << rowInterpolated->Z << '\t' << rowInterpolated->roll*pi/180 << '\t' << rowInterpolated->pitch*pi / 180 << '\t' << rowInterpolated->heading*pi / 180;
+			//fnew << jpgName << ".jpg" << '\t' << rowInterpolated->X << '\t' << rowInterpolated->Y << '\t' << rowInterpolated->Z << '\t' << rowInterpolated->roll << '\t' << rowInterpolated->pitch << '\t' << rowInterpolated->heading;
 		}
 
 		fnew.close();

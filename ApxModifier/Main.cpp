@@ -12,6 +12,8 @@ void runApxModifier(char* inputFilename, char* outputFilename)
 	//이벤트 전, 후 데이터 검색 및 계산
 	a->interpolateData();
 
+	cout << a->rowInterpolated->heading << endl;
+
 	//새 파일 생성
 	a->writeNewFile(outputFilename);
 }
@@ -29,6 +31,7 @@ void runApxModifier_false(char* inputFilename, char* outputFilename)
 
 int main()
 {
+	/*
 	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151501_apx.txt", "D://오픈소스/SystemCalibration 비교/Original_no_calib/2017-02-13_151501.txt");
 	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151505_apx.txt", "D://오픈소스/SystemCalibration 비교/Original_no_calib/2017-02-13_151505.txt");
 	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151509_apx.txt", "D://오픈소스/SystemCalibration 비교/Original_no_calib/2017-02-13_151509.txt");
@@ -51,7 +54,13 @@ int main()
 	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151617_apx.txt", "D://오픈소스/SystemCalibration 비교/Original_no_calib/2017-02-13_151617.txt");
 	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151621_apx.txt", "D://오픈소스/SystemCalibration 비교/Original_no_calib/2017-02-13_151621.txt");
 	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151625_apx.txt", "D://오픈소스/SystemCalibration 비교/Original_no_calib/2017-02-13_151625.txt");
+	*/
 
+	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151217_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151217.txt");
+	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151221_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151221.txt");
+	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151225_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151225.txt");
+	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151229_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151229.txt");
+	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151233_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151233.txt");
 
 	return 0;
 }

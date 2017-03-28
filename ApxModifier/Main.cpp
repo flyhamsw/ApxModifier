@@ -56,11 +56,23 @@ int main()
 	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151625_apx.txt", "D://오픈소스/SystemCalibration 비교/Original_no_calib/2017-02-13_151625.txt");
 	*/
 
-	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151217_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151217.txt");
-	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151221_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151221.txt");
-	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151225_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151225.txt");
-	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151229_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151229.txt");
-	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151233_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151233.txt");
+	//runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151217_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151217.txt");
+	//runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151221_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151221.txt");
+	//runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151225_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151225.txt");
+	//runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151229_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151229.txt");
+	//runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151233_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151233.txt");
+
+//	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-13_151501_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-13_151501.txt");
+
+	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-07_155003_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-07_155003.txt");
+	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-07_155007_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-07_155007.txt");
+	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-07_155011_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-07_155011.txt");
+	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-07_155019_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-07_155019.txt");
+	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-07_155023_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-07_155023.txt");
+	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-07_155027_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-07_155027.txt");
+	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-07_155031_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-07_155031.txt");
+	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-07_155035_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-07_155035.txt");
+	runApxModifier("D://오픈소스/SystemCalibration 비교/original/2017-02-07_155039_apx.txt", "D://오픈소스/SystemCalibration 비교/2017-02-07_155039.txt");
 
 	return 0;
 }

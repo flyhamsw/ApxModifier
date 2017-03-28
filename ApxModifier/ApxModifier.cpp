@@ -505,7 +505,7 @@ void ApxModifier::interpolateData()
 			else
 			{
 				//Priority #1: INS
-				weightedHeading = (atof(rowBefore->rowPASHR->heading)*weightA + atof(rowAfter->rowPASHR->heading)*weightB) / (weightA + weightB);
+				weightedHeading = (atof(rowBefore->rowPASHR->heading)*weightA + atof(rowAfter->rowPASHR->heading)*weightB) / (weightA + weightB) + 90;
 				weightedRoll = (atof(rowBefore->rowPASHR->roll)*weightA + atof(rowAfter->rowPASHR->roll)*weightB) / (weightA + weightB);
 				weightedPitch = (atof(rowBefore->rowPASHR->pitch)*weightA + atof(rowAfter->rowPASHR->pitch)*weightB) / (weightA + weightB);
 			}
@@ -530,7 +530,7 @@ void ApxModifier::interpolateData()
 			//convertWGS84_to_TM(&weightedLng, &weightedLat);
 
 			//Store interpolated data
-			rowInterpolated = new RowInterpolated(weightedLng, weightedLat, weightedHeightWGS84, weightedHeading, weightedRoll, weightedPitch) + 75;
+			rowInterpolated = new RowInterpolated(weightedLng, weightedLat, weightedHeightWGS84, weightedHeading, weightedRoll, weightedPitch);
 
 			cout << "OK" << endl << endl;
 

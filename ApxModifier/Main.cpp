@@ -12,8 +12,6 @@ void runApxModifier(char* inputFilename, char* outputFilename)
 	//이벤트 전, 후 데이터 검색 및 계산
 	a->interpolateData();
 
-	cout << a->rowInterpolated->heading << endl;
-
 	//새 파일 생성
 	a->writeNewFile(outputFilename);
 }
